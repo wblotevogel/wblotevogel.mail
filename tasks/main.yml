@@ -1,0 +1,23 @@
+---
+- name: Ensure postfix is installed (RedHat).
+  yum: name=postfix state=installed
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure postfix is installed (Debian).
+  apt: name=postfix state=installed
+  when: ansible_os_family == 'Debian'
+
+- name: add mail relay server
+  lineinfile: 
+    dest: /etc/postfix/main.cf
+    regexp: '^relayhost ='
+    #line='relayhost = 10.30.110.3'
+    line: "{{ relayhost_line }}"
+  notify: restart postfix
+          
+- name: Ensure postfix is started and enabled at boot.
+  service: name=postfix state=started enabled=yes
+
+- name: Install mailutils
+  apt: name=mailutils state=installed
+  when: ansible_os_family == 'Debian'
